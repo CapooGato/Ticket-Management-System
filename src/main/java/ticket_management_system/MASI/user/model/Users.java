@@ -1,5 +1,6 @@
 package ticket_management_system.MASI.user.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,6 +31,7 @@ public class Users {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany
+    @OneToMany(mappedBy = "user")
+    @JsonIgnoreProperties("user")
     private List<Ticket> tickets;
 }

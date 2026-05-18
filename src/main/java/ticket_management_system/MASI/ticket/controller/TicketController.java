@@ -2,11 +2,12 @@ package ticket_management_system.MASI.ticket.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ticket_management_system.MASI.ticket.TicketService;
+import ticket_management_system.MASI.ticket.service.TicketService;
 import ticket_management_system.MASI.ticket.dto.PatchTicketDto;
 import ticket_management_system.MASI.ticket.model.Status;
 import ticket_management_system.MASI.ticket.model.Ticket;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,7 +22,7 @@ public class TicketController {
 
     @PostMapping("/save")
     public ResponseEntity<Ticket> saveTicket(@RequestBody Ticket ticket){
-        return ResponseEntity.ok().body(ticketService.saveTicket(ticket));
+        return ResponseEntity.ok().body(ticketService.save(ticket));
     }
 
     @GetMapping("/{id}")
@@ -42,5 +43,10 @@ public class TicketController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<Ticket> patchStatus(@PathVariable("id") Long id, @RequestBody Map<String, Status> payload){
         return ResponseEntity.ok().body(ticketService.patchStatus(id, payload.get("status")));
+    }
+
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<Ticket>> getTicketsByUserId(@PathVariable("id")Long id){
+        return ResponseEntity.ok().body(ticketService.getTicketsByUserId(id));
     }
 }

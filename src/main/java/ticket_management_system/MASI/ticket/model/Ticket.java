@@ -1,9 +1,11 @@
 package ticket_management_system.MASI.ticket.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ticket_management_system.MASI.user.model.Users;
 
 import java.time.LocalDateTime;
 
@@ -36,4 +38,9 @@ public class Ticket {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties("tickets")
+    private Users user;
 }
