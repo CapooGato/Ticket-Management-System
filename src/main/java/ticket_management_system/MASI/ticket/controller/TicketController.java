@@ -49,4 +49,10 @@ public class TicketController {
     public ResponseEntity<List<Ticket>> getTicketsByUserId(@PathVariable("id")Long id){
         return ResponseEntity.ok().body(ticketService.getTicketsByUserId(id));
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Ticket>> getAllTickets() {
+        List<Ticket> tickets = ticketService.getAllTickets();
+        return ResponseEntity.ok().body(tickets);
+    }
 }

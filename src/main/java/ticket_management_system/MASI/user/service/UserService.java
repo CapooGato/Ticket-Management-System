@@ -8,6 +8,7 @@ import ticket_management_system.MASI.user.model.Users;
 import ticket_management_system.MASI.user.repository.UserRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -30,5 +31,17 @@ public class UserService {
 
     public Users getById(Long id){
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    public Users login(String email, String password) {
+        Optional<Users> userOptional = userRepository.findByEmail(email);
+        
+        if (userOptional.isPresent()) {
+            Users user = userOptional.get();
+            if (user.getPassword().equals(password)) {
+                return user;
+            }
+        }
+        return null;
     }
 }

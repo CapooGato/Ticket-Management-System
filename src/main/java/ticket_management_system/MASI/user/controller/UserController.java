@@ -1,5 +1,6 @@
 package ticket_management_system.MASI.user.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ticket_management_system.MASI.ticket.model.Ticket;
@@ -7,9 +8,11 @@ import ticket_management_system.MASI.user.model.Users;
 import ticket_management_system.MASI.user.service.UserService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     private final UserService userService;
@@ -31,5 +34,20 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<Users> getUserById(@PathVariable("id")Long id){
         return ResponseEntity.ok().body(userService.getById(id));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody Map<String, String> credentials) {
+        String email = credentials.get("email");
+        String password = credentials.get("password");
+
+        Users loggedInUser = userService.login(email, password);
+
+        if (loggedInUser != null) {
+            return ResponseEntity.ok().body(loggedInUser);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                 .body("{\"error\": \"Błędny e-mail lub hasło\"}");
+        }
     }
 }
