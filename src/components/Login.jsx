@@ -4,16 +4,16 @@ import { useNavigate } from 'react-router-dom';
 function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
+  
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    name: '',
+    surname: '',
   });
-
-  // Dane wpisane do logowania dla testów
-  const CREDENTIALS = {
-    admin: { email: 'admin@hr.pl', password: 'admin123' },
-    pracownik: { email: 'pracownik@hr.pl', password: 'user123' }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,15 +23,60 @@ function Login() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
     
-    if (formData.email === CREDENTIALS.admin.email && formData.password === CREDENTIALS.admin.password) {
-      navigate('/admin'); 
-    } else if (formData.email === CREDENTIALS.pracownik.email && formData.password === CREDENTIALS.pracownik.password) {
-      navigate('/user'); 
-    } else {
-      alert("Błędny e-mail lub hasło!");
+    const url = isLogin 
+      ? 'http://localhost:8080/api/user/login' 
+      : 'http://localhost:8080/api/user/save';
+
+    const payload = isLogin 
+      ? { 
+          email: formData.email, 
+          password: formData.password 
+        }
+      : { 
+          name: formData.name,
+          surname: formData.surname,
+          email: formData.email, 
+          password: formData.password,
+          role: "PRACOWNIK"
+        };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        if (isLogin) {
+          const data = await response.json(); 
+          localStorage.setItem('currentUser', JSON.stringify(data));
+          
+          if (data.role === 'ADMINISTRATOR_HR') {
+            navigate('/admin'); 
+          } else if (data.role === 'PRACOWNIK') {
+            navigate('/user'); 
+          } else {
+            setErrorMessage("Konto nie ma przypisanej odpowiedniej roli.");
+          }
+        } else {
+          setSuccessMessage("Konto zostało utworzone! Możesz się teraz zalogować.");
+          setIsLogin(true);
+          setFormData({ email: '', password: '', name: '', surname: '' });
+        }
+      } else {
+        setErrorMessage(isLogin ? "Błędny e-mail lub hasło!" : "Błąd rejestracji. Taki adres e-mail może już istnieć.");
+      }
+    } catch (error) {
+      console.error("Błąd sieci:", error);
+      setErrorMessage("Brak połączenia z serwerem Spring Boot.");
     }
   };
 
@@ -40,7 +85,48 @@ function Login() {
       <div className="card">
         <h2>{isLogin ? 'Logowanie' : 'Rejestracja'}</h2>
         
+        {errorMessage && (
+          <p style={{ color: 'red', fontSize: '14px', fontWeight: 'bold', marginBottom: '10px' }}>
+            {errorMessage}
+          </p>
+        )}
+
+        {successMessage && (
+          <p style={{ color: 'green', fontSize: '14px', fontWeight: 'bold', marginBottom: '10px' }}>
+            {successMessage}
+          </p>
+        )}
+        
         <form onSubmit={handleSubmit} className="form">
+          
+          {!isLogin && (
+            <>
+              <div className="input-group">
+                <label>Imię:</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required={!isLogin}
+                  className="input"
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Nazwisko:</label>
+                <input
+                  type="text"
+                  name="surname"
+                  value={formData.surname}
+                  onChange={handleChange}
+                  required={!isLogin}
+                  className="input"
+                />
+              </div>
+            </>
+          )}
+
           <div className="input-group">
             <label>Adres e-mail:</label>
             <input
@@ -74,7 +160,11 @@ function Login() {
           {isLogin ? 'Nie masz jeszcze konta? ' : 'Masz już konto? '}
           <button 
             type="button" 
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setErrorMessage('');
+              setSuccessMessage('');
+            }}
             className="toggle-button"
           >
             {isLogin ? 'Zarejestruj się' : 'Zaloguj się'}

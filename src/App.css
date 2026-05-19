@@ -388,6 +388,7 @@
   margin-top: 10px;
   margin-bottom: 25px;
   font-style: italic;
+  white-space: pre-wrap;
   color: #444;
 }
 
